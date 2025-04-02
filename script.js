@@ -1,5 +1,7 @@
 // Initialize chart
 let loanChart;
+let currentPrincipal;
+let currentAppreciationShare;
 
 // Register the datalabels plugin
 Chart.register(ChartDataLabels);
@@ -12,6 +14,10 @@ const durationSelect = document.getElementById('duration');
 const monthlyPaymentDisplay = document.getElementById('monthlyPayment');
 const chartCanvas = document.getElementById('loanChart');
 const calculateBtn = document.getElementById('calculateBtn');
+const prepaymentInput = document.getElementById('prepayment');
+const calculatePrepaymentBtn = document.getElementById('calculatePrepaymentBtn');
+const newMonthlyPaymentDisplay = document.getElementById('newMonthlyPayment');
+const monthlySavingsDisplay = document.getElementById('monthlySavings');
 
 // Constants
 const INTEREST_RATE = 0.045; // 4.5% annual interest rate
@@ -34,36 +40,26 @@ function calculateMonthlyPayment(principal) {
 
 // Calculate final home value with appreciation
 function calculateFinalHomeValue(initialValue, appreciationRate, years) {
-    if (appreciationRate === 'special') {
-        // Special case: -5% in years 1 and 2, then 3% annually
-        let value = initialValue;
-        
-        // First two years: -5% each
-        value *= Math.pow(1 - 0.05, 2);
-        
-        // Remaining years: +3% each
-        if (years > 2) {
-            value *= Math.pow(1 + 0.03, years - 2);
-        }
-        
-        return value;
-    }
-    
-    // Standard case: constant appreciation rate
     return initialValue * Math.pow(1 + appreciationRate, years);
 }
 
 // Calculate appreciation share
-function calculateAppreciationShare(finalHomeValue) {
-    return finalHomeValue * APPRECIATION_SHARE;
+function calculateAppreciationShare(initialValue, finalValue) {
+    return finalValue * APPRECIATION_SHARE;
 }
 
 // Update chart
-function updateChart(principal, appreciationShare) {
+function updateChart(principal, appreciationShare, isPrepayment = false) {
     const ctx = chartCanvas.getContext('2d');
     
     if (loanChart) {
         loanChart.destroy();
+    }
+
+    // Store current values if not a prepayment calculation
+    if (!isPrepayment) {
+        currentPrincipal = principal;
+        currentAppreciationShare = appreciationShare;
     }
 
     loanChart = new Chart(ctx, {
@@ -151,7 +147,11 @@ function updateCalculations() {
     // Calculate values
     const monthlyPayment = calculateMonthlyPayment(principal);
     const finalHomeValue = calculateFinalHomeValue(homeValue, appreciationRate, duration);
-    const appreciationShare = calculateAppreciationShare(finalHomeValue);
+    const appreciationShare = calculateAppreciationShare(homeValue, finalHomeValue);
+
+    // Update display
+    monthlyPaymentDisplay.textContent = formatCurrency(monthlyPayment);
+    updateChart(principal, appreciationShare);
 
     // Log calculations for debugging
     console.log('Calculation Details:', {
@@ -164,14 +164,44 @@ function updateCalculations() {
         appreciationShare,
         totalPayment: principal + appreciationShare
     });
-
-    // Update display
-    monthlyPaymentDisplay.textContent = formatCurrency(monthlyPayment);
-    updateChart(principal, appreciationShare);
 }
 
-// Add event listener for calculate button
+// Calculate prepayment impact
+function calculatePrepayment() {
+    const prepaymentAmount = parseFloat(prepaymentInput.value) || 0;
+    
+    if (prepaymentAmount <= 0 || prepaymentAmount >= currentPrincipal) {
+        alert('Please enter a valid prepayment amount less than the current principal.');
+        return;
+    }
+
+    // Calculate new values
+    const newPrincipal = currentPrincipal - prepaymentAmount;
+    const newMonthlyPayment = calculateMonthlyPayment(newPrincipal);
+    const originalMonthlyPayment = calculateMonthlyPayment(currentPrincipal);
+    const monthlySavings = originalMonthlyPayment - newMonthlyPayment;
+
+    // Update displays
+    newMonthlyPaymentDisplay.textContent = formatCurrency(newMonthlyPayment);
+    monthlySavingsDisplay.textContent = formatCurrency(monthlySavings);
+    
+    // Update chart with new principal
+    updateChart(newPrincipal, currentAppreciationShare, true);
+
+    // Log calculations for debugging
+    console.log('Prepayment Details:', {
+        originalPrincipal: currentPrincipal,
+        prepaymentAmount,
+        newPrincipal,
+        originalMonthlyPayment,
+        newMonthlyPayment,
+        monthlySavings
+    });
+}
+
+// Add event listeners
 calculateBtn.addEventListener('click', updateCalculations);
+calculatePrepaymentBtn.addEventListener('click', calculatePrepayment);
 
 // Initial calculation
 updateCalculations(); 

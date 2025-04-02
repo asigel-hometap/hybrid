@@ -106,6 +106,54 @@ input:focus, select:focus {
     margin-top: 1rem;
 }
 
+.prepayment-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+}
+
+.prepayment-section h2 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.prepayment-section .input-group {
+    max-width: 300px;
+    margin: 0 auto 1.5rem;
+}
+
+.calculate-button.secondary {
+    background-color: #2ecc71;
+    margin-bottom: 2rem;
+}
+
+.calculate-button.secondary:hover {
+    background-color: #27ae60;
+}
+
+.prepayment-results {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+.result-item {
+    text-align: center;
+}
+
+.result-item h3 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.amount.positive {
+    color: #2ecc71;
+}
+
 @media (max-width: 600px) {
     .calculator-container {
         margin: 1rem;
