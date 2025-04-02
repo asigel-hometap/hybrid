@@ -34,12 +34,28 @@ function calculateMonthlyPayment(principal) {
 
 // Calculate final home value with appreciation
 function calculateFinalHomeValue(initialValue, appreciationRate, years) {
+    if (appreciationRate === 'special') {
+        // Special case: -5% in years 1 and 2, then 3% annually
+        let value = initialValue;
+        
+        // First two years: -5% each
+        value *= Math.pow(1 - 0.05, 2);
+        
+        // Remaining years: +3% each
+        if (years > 2) {
+            value *= Math.pow(1 + 0.03, years - 2);
+        }
+        
+        return value;
+    }
+    
+    // Standard case: constant appreciation rate
     return initialValue * Math.pow(1 + appreciationRate, years);
 }
 
 // Calculate appreciation share
-function calculateAppreciationShare(initialValue, finalValue) {
-    return finalValue * APPRECIATION_SHARE;
+function calculateAppreciationShare(finalHomeValue) {
+    return finalHomeValue * APPRECIATION_SHARE;
 }
 
 // Update chart
@@ -135,11 +151,7 @@ function updateCalculations() {
     // Calculate values
     const monthlyPayment = calculateMonthlyPayment(principal);
     const finalHomeValue = calculateFinalHomeValue(homeValue, appreciationRate, duration);
-    const appreciationShare = calculateAppreciationShare(homeValue, finalHomeValue);
-
-    // Update display
-    monthlyPaymentDisplay.textContent = formatCurrency(monthlyPayment);
-    updateChart(principal, appreciationShare);
+    const appreciationShare = calculateAppreciationShare(finalHomeValue);
 
     // Log calculations for debugging
     console.log('Calculation Details:', {
@@ -152,6 +164,10 @@ function updateCalculations() {
         appreciationShare,
         totalPayment: principal + appreciationShare
     });
+
+    // Update display
+    monthlyPaymentDisplay.textContent = formatCurrency(monthlyPayment);
+    updateChart(principal, appreciationShare);
 }
 
 // Add event listener for calculate button

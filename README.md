@@ -7,7 +7,7 @@ An interactive financial calculator for a novel home equity loan product that of
 This calculator helps homeowners understand the financial implications of taking out a home equity loan with the following terms:
 - Interest-only monthly payments at 4.5% APR
 - Principal repayment at term end
-- 6% share of home price appreciation at term end
+- 6% share of final home value at term end
 
 ## Input Parameters
 
@@ -19,8 +19,12 @@ This calculator helps homeowners understand the financial implications of taking
 2. **Home Price Appreciation**
    - Type: Picklist
    - Options:
+     - No appreciation (0%)
+     - 3% annual appreciation
      - 4.34% annual appreciation
      - 8% annual appreciation
+     - -2.5% annual appreciation
+     - Special case: -5% in years 1-2, then 3% annually
 
 3. **Duration**
    - Type: Picklist
@@ -35,7 +39,7 @@ This calculator helps homeowners understand the financial implications of taking
 
 1. **Stacked Bar Chart**
    - Bottom layer: Principal amount
-   - Top layer: Market appreciation impact on final payment
+   - Top layer: 6% share of final home value
 
 2. **Monthly Payment Amount**
    - Calculated as: Principal × 4.5% ÷ 12
@@ -58,9 +62,9 @@ Given:
 
 Results:
 - Monthly Payment: $375 ($100,000 × 0.045 ÷ 12)
-- Final Payment: $141,734
-  - Principal: $100,000
-  - Appreciation Share: $41,734
+- Final Home Value: $741,866.67 ($600,000 × (1 + 0.0434)^5)
+- Appreciation Share: $44,512 ($741,866.67 × 0.06)
+- Total Payment: $144,512 ($100,000 + $44,512)
 
 ## Development Plan
 
