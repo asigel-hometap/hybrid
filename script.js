@@ -169,6 +169,7 @@ function updateCalculations() {
 // Calculate prepayment impact
 function calculatePrepayment() {
     const prepaymentAmount = parseFloat(prepaymentInput.value) || 0;
+    const duration = parseInt(durationSelect.value);
     
     if (prepaymentAmount <= 0 || prepaymentAmount >= currentPrincipal) {
         alert('Please enter a valid prepayment amount less than the current principal.');
@@ -180,10 +181,11 @@ function calculatePrepayment() {
     const newMonthlyPayment = calculateMonthlyPayment(newPrincipal);
     const originalMonthlyPayment = calculateMonthlyPayment(currentPrincipal);
     const monthlySavings = originalMonthlyPayment - newMonthlyPayment;
+    const totalSavings = monthlySavings * duration * 12;
 
     // Update displays
     newMonthlyPaymentDisplay.textContent = formatCurrency(newMonthlyPayment);
-    monthlySavingsDisplay.textContent = formatCurrency(monthlySavings);
+    monthlySavingsDisplay.textContent = formatCurrency(totalSavings);
     
     // Update chart with new principal
     updateChart(newPrincipal, currentAppreciationShare, true);
@@ -195,7 +197,9 @@ function calculatePrepayment() {
         newPrincipal,
         originalMonthlyPayment,
         newMonthlyPayment,
-        monthlySavings
+        monthlySavings,
+        monthsRemaining: duration * 12,
+        totalSavings
     });
 }
 
