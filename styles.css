@@ -101,6 +101,87 @@ input:focus, select:focus {
     color: #2ecc71;
 }
 
+.ending-home-value {
+    text-align: center;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    margin-top: 1rem;
+}
+
+.appreciation-share {
+    text-align: center;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    margin-top: 1rem;
+}
+
+.total-cost {
+    text-align: center;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    margin-top: 1rem;
+}
+
+.cost-comparison {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1rem 0;
+}
+
+.cost-amount {
+    text-align: center;
+}
+
+.cost-amount .label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.cost-amount .amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.cost-amount .amount.lower {
+    color: #2ecc71;
+}
+
+.cost-components {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.component {
+    margin: 0.5rem 0;
+}
+
+.component span {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.cost-breakdown {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.cost-breakdown .percentage {
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+.cost-breakdown .percentage span {
+    color: #2c3e50;
+}
+
 .chart-container {
     height: 300px;
     margin-top: 1rem;

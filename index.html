@@ -56,6 +56,45 @@
                 <div id="monthlyPayment" class="amount">$0</div>
             </div>
 
+            <div class="ending-home-value">
+                <h2>Ending Home Value</h2>
+                <div id="endingHomeValue" class="amount">$0</div>
+                <div class="cost-breakdown">After selected appreciation period</div>
+            </div>
+
+            <div class="appreciation-share">
+                <h2>Appreciation Share</h2>
+                <div id="costAppreciation" class="amount">$0</div>
+                <div class="cost-breakdown">
+                    <div>Based on investment percentage of ending value</div>
+                    <div class="percentage">Investment Percentage: <span id="appreciationSharePercentage">0%</span></div>
+                </div>
+            </div>
+
+            <div class="total-cost">
+                <h2>Total Cost</h2>
+                <div class="cost-comparison">
+                    <div class="cost-amount">
+                        <div class="label">Total Cost:</div>
+                        <div id="totalCost" class="amount">$0</div>
+                    </div>
+                    <div class="cost-amount">
+                        <div class="label">Cap:</div>
+                        <div id="capAmount" class="amount">$0</div>
+                    </div>
+                </div>
+                <div class="cost-components">
+                    <div class="component">Principal: <span id="costPrincipal">$0</span></div>
+                    <div class="component">Interest Payments: <span id="costInterest">$0</span></div>
+                </div>
+            </div>
+
+            <div class="value-basis">
+                <h2>Value Basis of Interest Payments</h2>
+                <div id="valueBasis" class="amount">$0</div>
+                <div class="cost-breakdown">Sum of monthly payments compounded at 1.25% monthly</div>
+            </div>
+
             <div class="chart-container">
                 <canvas id="loanChart"></canvas>
             </div>

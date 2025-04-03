@@ -12,6 +12,14 @@ const homeValueInput = document.getElementById('homeValue');
 const appreciationSelect = document.getElementById('appreciation');
 const durationSelect = document.getElementById('duration');
 const monthlyPaymentDisplay = document.getElementById('monthlyPayment');
+const endingHomeValueDisplay = document.getElementById('endingHomeValue');
+const totalCostDisplay = document.getElementById('totalCost');
+const capAmountDisplay = document.getElementById('capAmount');
+const costPrincipalDisplay = document.getElementById('costPrincipal');
+const costAppreciationDisplay = document.getElementById('costAppreciation');
+const appreciationSharePercentageDisplay = document.getElementById('appreciationSharePercentage');
+const costInterestDisplay = document.getElementById('costInterest');
+const valueBasisDisplay = document.getElementById('valueBasis');
 const chartCanvas = document.getElementById('loanChart');
 const calculateBtn = document.getElementById('calculateBtn');
 const prepaymentInput = document.getElementById('prepayment');
@@ -21,7 +29,8 @@ const monthlySavingsDisplay = document.getElementById('monthlySavings');
 
 // Constants
 const INTEREST_RATE = 0.045; // 4.5% annual interest rate
-const APPRECIATION_SHARE = 0.06; // 6% share of appreciation
+const MONTHLY_COMPOUND_RATE = 0.0125; // 1.25% monthly compound rate
+const APPRECIATION_SHARE_MULTIPLIER = 0.60; // 60% of investment percentage
 
 // Format currency
 function formatCurrency(amount) {
@@ -44,8 +53,38 @@ function calculateFinalHomeValue(initialValue, appreciationRate, years) {
 }
 
 // Calculate appreciation share
-function calculateAppreciationShare(initialValue, finalValue) {
-    return finalValue * APPRECIATION_SHARE;
+function calculateAppreciationShare(principal, initialHomeValue, finalHomeValue) {
+    const investmentPercentage = (principal / initialHomeValue) * APPRECIATION_SHARE_MULTIPLIER;
+    return finalHomeValue * investmentPercentage;
+}
+
+// Calculate total cost
+function calculateTotalCost(principal, monthlyPayment, duration, appreciationShare) {
+    const totalMonths = duration * 12;
+    const valueBasis = calculateValueBasis(monthlyPayment, totalMonths);
+    return principal + appreciationShare + valueBasis;
+}
+
+// Calculate value basis of interest payments
+function calculateValueBasis(monthlyPayment, totalMonths) {
+    let totalValue = 0;
+    
+    // For each payment, calculate its future value
+    for (let month = 1; month <= totalMonths; month++) {
+        // Number of compounding periods for this payment
+        const remainingMonths = totalMonths - month;
+        // Future value of this payment
+        const futureValue = monthlyPayment * Math.pow(1 + MONTHLY_COMPOUND_RATE, remainingMonths);
+        totalValue += futureValue;
+    }
+    
+    return totalValue;
+}
+
+// Calculate cap amount
+function calculateCap(principal, duration) {
+    const totalMonths = duration * 12;
+    return principal * Math.pow(1 + MONTHLY_COMPOUND_RATE, totalMonths);
 }
 
 // Update chart
@@ -143,14 +182,37 @@ function updateCalculations() {
     const homeValue = parseFloat(homeValueInput.value);
     const appreciationRate = parseFloat(appreciationSelect.value);
     const duration = parseInt(durationSelect.value);
+    const totalMonths = duration * 12;
 
     // Calculate values
     const monthlyPayment = calculateMonthlyPayment(principal);
     const finalHomeValue = calculateFinalHomeValue(homeValue, appreciationRate, duration);
-    const appreciationShare = calculateAppreciationShare(homeValue, finalHomeValue);
+    const investmentPercentage = (principal / homeValue) * APPRECIATION_SHARE_MULTIPLIER;
+    const appreciationShare = calculateAppreciationShare(principal, homeValue, finalHomeValue);
+    const valueBasis = calculateValueBasis(monthlyPayment, totalMonths);
+    const totalCost = principal + appreciationShare + valueBasis;
+    const capAmount = calculateCap(principal, duration);
 
     // Update display
     monthlyPaymentDisplay.textContent = formatCurrency(monthlyPayment);
+    endingHomeValueDisplay.textContent = formatCurrency(finalHomeValue);
+    totalCostDisplay.textContent = formatCurrency(totalCost);
+    capAmountDisplay.textContent = formatCurrency(capAmount);
+    
+    // Highlight the lower amount
+    totalCostDisplay.classList.remove('lower');
+    capAmountDisplay.classList.remove('lower');
+    if (totalCost < capAmount) {
+        totalCostDisplay.classList.add('lower');
+    } else {
+        capAmountDisplay.classList.add('lower');
+    }
+
+    costPrincipalDisplay.textContent = formatCurrency(principal);
+    costAppreciationDisplay.textContent = formatCurrency(appreciationShare);
+    appreciationSharePercentageDisplay.textContent = (investmentPercentage * 100).toFixed(2) + '%';
+    costInterestDisplay.textContent = formatCurrency(valueBasis);
+    valueBasisDisplay.textContent = formatCurrency(valueBasis);
     updateChart(principal, appreciationShare);
 
     // Log calculations for debugging
@@ -161,8 +223,16 @@ function updateCalculations() {
         duration,
         monthlyPayment,
         finalHomeValue,
+        investmentPercentage: (investmentPercentage * 100).toFixed(2) + '%',
         appreciationShare,
-        totalPayment: principal + appreciationShare
+        valueBasis,
+        totalCost,
+        capAmount,
+        components: {
+            principal: principal,
+            appreciationShare: appreciationShare,
+            interestPayments: valueBasis
+        }
     });
 }
 
@@ -170,6 +240,8 @@ function updateCalculations() {
 function calculatePrepayment() {
     const prepaymentAmount = parseFloat(prepaymentInput.value) || 0;
     const duration = parseInt(durationSelect.value);
+    const homeValue = parseFloat(homeValueInput.value);
+    const appreciationRate = parseFloat(appreciationSelect.value);
     
     if (prepaymentAmount <= 0 || prepaymentAmount >= currentPrincipal) {
         alert('Please enter a valid prepayment amount less than the current principal.');
@@ -178,6 +250,8 @@ function calculatePrepayment() {
 
     // Calculate new values
     const newPrincipal = currentPrincipal - prepaymentAmount;
+    const finalHomeValue = calculateFinalHomeValue(homeValue, appreciationRate, duration);
+    const newAppreciationShare = calculateAppreciationShare(newPrincipal, homeValue, finalHomeValue);
     const newMonthlyPayment = calculateMonthlyPayment(newPrincipal);
     const originalMonthlyPayment = calculateMonthlyPayment(currentPrincipal);
     const monthlySavings = originalMonthlyPayment - newMonthlyPayment;
@@ -187,14 +261,18 @@ function calculatePrepayment() {
     newMonthlyPaymentDisplay.textContent = formatCurrency(newMonthlyPayment);
     monthlySavingsDisplay.textContent = formatCurrency(totalSavings);
     
-    // Update chart with new principal
-    updateChart(newPrincipal, currentAppreciationShare, true);
+    // Update chart with new principal and appreciation share
+    updateChart(newPrincipal, newAppreciationShare, true);
 
     // Log calculations for debugging
     console.log('Prepayment Details:', {
         originalPrincipal: currentPrincipal,
         prepaymentAmount,
         newPrincipal,
+        homeValue,
+        finalHomeValue,
+        newInvestmentPercentage: (newPrincipal / homeValue * 100).toFixed(2) + '%',
+        newAppreciationShare,
         originalMonthlyPayment,
         newMonthlyPayment,
         monthlySavings,
