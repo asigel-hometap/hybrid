@@ -20,6 +20,13 @@ const costAppreciationDisplay = document.getElementById('costAppreciation');
 const appreciationSharePercentageDisplay = document.getElementById('appreciationSharePercentage');
 const costInterestDisplay = document.getElementById('costInterest');
 const valueBasisDisplay = document.getElementById('valueBasis');
+const totalPayoutDisplay = document.getElementById('totalPayout');
+const payoutPrincipalDisplay = document.getElementById('payoutPrincipal');
+const payoutInterestDisplay = document.getElementById('payoutInterest');
+const payoutAppreciationDisplay = document.getElementById('payoutAppreciation');
+const capAdjustmentDetails = document.getElementById('capAdjustmentDetails');
+const originalAppreciationDisplay = document.getElementById('originalAppreciation');
+const appreciationDiscountDisplay = document.getElementById('appreciationDiscount');
 const chartCanvas = document.getElementById('loanChart');
 const calculateBtn = document.getElementById('calculateBtn');
 const prepaymentInput = document.getElementById('prepayment');
@@ -85,6 +92,33 @@ function calculateValueBasis(monthlyPayment, totalMonths) {
 function calculateCap(principal, duration) {
     const totalMonths = duration * 12;
     return principal * Math.pow(1 + MONTHLY_COMPOUND_RATE, totalMonths);
+}
+
+// Calculate total payout
+function calculateTotalPayout(principal, duration, appreciationShare, totalCost, capAmount) {
+    const monthlyPayment = principal * INTEREST_RATE / 12;
+    const cumulativeInterest = monthlyPayment * 12 * duration;
+    
+    let adjustedAppreciationShare = appreciationShare;
+    let appreciationDiscount = 0;
+    
+    if (totalCost >= capAmount) {
+        appreciationDiscount = totalCost - capAmount;
+        adjustedAppreciationShare = appreciationShare - appreciationDiscount;
+    }
+
+    const totalPayout = principal + cumulativeInterest + adjustedAppreciationShare;
+
+    return {
+        totalPayout,
+        components: {
+            principal,
+            cumulativeInterest,
+            appreciationShare: adjustedAppreciationShare,
+            originalAppreciationShare: appreciationShare,
+            appreciationDiscount: appreciationDiscount
+        }
+    };
 }
 
 // Update chart
@@ -177,7 +211,7 @@ function updateChart(principal, appreciationShare, isPrepayment = false) {
 }
 
 // Update calculations
-function updateCalculations() {
+function updateCalculations(updateChartDisplay = true) {
     const principal = parseFloat(principalInput.value);
     const homeValue = parseFloat(homeValueInput.value);
     const appreciationRate = parseFloat(appreciationSelect.value);
@@ -192,6 +226,7 @@ function updateCalculations() {
     const valueBasis = calculateValueBasis(monthlyPayment, totalMonths);
     const totalCost = principal + appreciationShare + valueBasis;
     const capAmount = calculateCap(principal, duration);
+    const payout = calculateTotalPayout(principal, duration, appreciationShare, totalCost, capAmount);
 
     // Update display
     monthlyPaymentDisplay.textContent = formatCurrency(monthlyPayment);
@@ -213,7 +248,25 @@ function updateCalculations() {
     appreciationSharePercentageDisplay.textContent = (investmentPercentage * 100).toFixed(2) + '%';
     costInterestDisplay.textContent = formatCurrency(valueBasis);
     valueBasisDisplay.textContent = formatCurrency(valueBasis);
-    updateChart(principal, appreciationShare);
+
+    // Update total payout display
+    totalPayoutDisplay.textContent = formatCurrency(payout.totalPayout);
+    payoutPrincipalDisplay.textContent = formatCurrency(payout.components.principal);
+    payoutInterestDisplay.textContent = formatCurrency(payout.components.cumulativeInterest);
+    payoutAppreciationDisplay.textContent = formatCurrency(payout.components.appreciationShare);
+
+    // Show/hide and update cap adjustment details
+    if (totalCost >= capAmount) {
+        capAdjustmentDetails.style.display = 'block';
+        originalAppreciationDisplay.textContent = formatCurrency(payout.components.originalAppreciationShare);
+        appreciationDiscountDisplay.textContent = '-' + formatCurrency(payout.components.appreciationDiscount);
+    } else {
+        capAdjustmentDetails.style.display = 'none';
+    }
+
+    if (updateChartDisplay) {
+        updateChart(principal, appreciationShare);
+    }
 
     // Log calculations for debugging
     console.log('Calculation Details:', {
@@ -228,11 +281,91 @@ function updateCalculations() {
         valueBasis,
         totalCost,
         capAmount,
+        totalPayout: payout.totalPayout,
+        payoutComponents: payout.components,
         components: {
             principal: principal,
             appreciationShare: appreciationShare,
             interestPayments: valueBasis
         }
+    });
+}
+
+// Handle input changes without updating chart
+function handleInputChange() {
+    const principal = parseFloat(principalInput.value);
+    const homeValue = parseFloat(homeValueInput.value);
+    const appreciationRate = parseFloat(appreciationSelect.value);
+    const duration = parseInt(durationSelect.value);
+    const totalMonths = duration * 12;
+
+    // Calculate values
+    const monthlyPayment = calculateMonthlyPayment(principal);
+    const finalHomeValue = calculateFinalHomeValue(homeValue, appreciationRate, duration);
+    const investmentPercentage = (principal / homeValue) * APPRECIATION_SHARE_MULTIPLIER;
+    const appreciationShare = calculateAppreciationShare(principal, homeValue, finalHomeValue);
+    const valueBasis = calculateValueBasis(monthlyPayment, totalMonths);
+    const totalCost = principal + appreciationShare + valueBasis;
+    const capAmount = calculateCap(principal, duration);
+    const payout = calculateTotalPayout(principal, duration, appreciationShare, totalCost, capAmount);
+
+    // Update display
+    monthlyPaymentDisplay.textContent = formatCurrency(monthlyPayment);
+    endingHomeValueDisplay.textContent = formatCurrency(finalHomeValue);
+    totalCostDisplay.textContent = formatCurrency(totalCost);
+    capAmountDisplay.textContent = formatCurrency(capAmount);
+    
+    // Highlight the lower amount
+    totalCostDisplay.classList.remove('lower');
+    capAmountDisplay.classList.remove('lower');
+    if (totalCost < capAmount) {
+        totalCostDisplay.classList.add('lower');
+    } else {
+        capAmountDisplay.classList.add('lower');
+    }
+
+    costPrincipalDisplay.textContent = formatCurrency(principal);
+    costAppreciationDisplay.textContent = formatCurrency(appreciationShare);
+    appreciationSharePercentageDisplay.textContent = (investmentPercentage * 100).toFixed(2) + '%';
+    costInterestDisplay.textContent = formatCurrency(valueBasis);
+    valueBasisDisplay.textContent = formatCurrency(valueBasis);
+
+    // Update total payout display
+    totalPayoutDisplay.textContent = formatCurrency(payout.totalPayout);
+    payoutPrincipalDisplay.textContent = formatCurrency(payout.components.principal);
+    payoutInterestDisplay.textContent = formatCurrency(payout.components.cumulativeInterest);
+    payoutAppreciationDisplay.textContent = formatCurrency(payout.components.appreciationShare);
+
+    // Show/hide and update cap adjustment details
+    if (totalCost >= capAmount) {
+        capAdjustmentDetails.style.display = 'block';
+        originalAppreciationDisplay.textContent = formatCurrency(payout.components.originalAppreciationShare);
+        appreciationDiscountDisplay.textContent = '-' + formatCurrency(payout.components.appreciationDiscount);
+    } else {
+        capAdjustmentDetails.style.display = 'none';
+    }
+
+    // Store current values for chart
+    currentPrincipal = principal;
+    currentAppreciationShare = appreciationShare;
+
+    // Log calculations for debugging
+    console.log('Input Change Details:', {
+        principal,
+        homeValue,
+        appreciationRate,
+        duration,
+        monthlyPayment,
+        finalHomeValue,
+        investmentPercentage: (investmentPercentage * 100).toFixed(2) + '%',
+        appreciationShare,
+        valueBasis,
+        totalCost,
+        capAmount,
+        totalPayout: payout.totalPayout,
+        payoutComponents: payout.components,
+        currentPrincipal,
+        currentAppreciationShare
     });
 }
 
@@ -282,8 +415,13 @@ function calculatePrepayment() {
 }
 
 // Add event listeners
-calculateBtn.addEventListener('click', updateCalculations);
+calculateBtn.addEventListener('click', () => {
+    handleInputChange(); // First update all calculations
+    updateChart(currentPrincipal, currentAppreciationShare); // Then update chart
+});
 calculatePrepaymentBtn.addEventListener('click', calculatePrepayment);
+homeValueInput.addEventListener('input', handleInputChange);
 
 // Initial calculation
-updateCalculations(); 
+handleInputChange(); // First update all calculations
+updateChart(currentPrincipal, currentAppreciationShare); // Then update chart 

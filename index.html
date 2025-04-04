@@ -13,6 +13,7 @@
         <h1>Home Equity Loan Calculator</h1>
         
         <div class="input-section">
+            <h2>Inputs</h2>
             <div class="input-group">
                 <label for="principal">Principal Amount ($)</label>
                 <input type="number" id="principal" min="100000" step="1000" value="100000">
@@ -51,70 +52,92 @@
         <button id="calculateBtn" class="calculate-button">Calculate</button>
 
         <div class="output-section">
-            <div class="monthly-payment">
-                <h2>Monthly Payment</h2>
-                <div id="monthlyPayment" class="amount">$0</div>
-            </div>
-
-            <div class="ending-home-value">
-                <h2>Ending Home Value</h2>
-                <div id="endingHomeValue" class="amount">$0</div>
-                <div class="cost-breakdown">After selected appreciation period</div>
-            </div>
-
-            <div class="appreciation-share">
-                <h2>Appreciation Share</h2>
-                <div id="costAppreciation" class="amount">$0</div>
-                <div class="cost-breakdown">
-                    <div>Based on investment percentage of ending value</div>
-                    <div class="percentage">Investment Percentage: <span id="appreciationSharePercentage">0%</span></div>
+            <div class="homeowner-display">
+                <h2>Homeowner Display</h2>
+                <div class="monthly-payment">
+                    <h3>Monthly Payment</h3>
+                    <div id="monthlyPayment" class="amount">$0</div>
                 </div>
-            </div>
 
-            <div class="total-cost">
-                <h2>Total Cost</h2>
-                <div class="cost-comparison">
-                    <div class="cost-amount">
-                        <div class="label">Total Cost:</div>
-                        <div id="totalCost" class="amount">$0</div>
+                <div class="chart-container">
+                    <canvas id="loanChart"></canvas>
+                </div>
+
+                <div class="prepayment-section">
+                    <h3>Principal Prepayment Calculator</h3>
+                    <div class="input-group">
+                        <label for="prepayment">Prepayment Amount ($)</label>
+                        <input type="number" id="prepayment" min="0" step="1000" value="0">
                     </div>
-                    <div class="cost-amount">
-                        <div class="label">Cap:</div>
-                        <div id="capAmount" class="amount">$0</div>
+                    <button id="calculatePrepaymentBtn" class="calculate-button secondary">Calculate with Prepayment</button>
+                    
+                    <div class="prepayment-results">
+                        <div class="result-item">
+                            <h4>New Monthly Payment</h4>
+                            <div id="newMonthlyPayment" class="amount">$0</div>
+                        </div>
+                        <div class="result-item">
+                            <h4>Total Monthly Payment Savings</h4>
+                            <div id="monthlySavings" class="amount positive">$0</div>
+                        </div>
                     </div>
                 </div>
-                <div class="cost-components">
-                    <div class="component">Principal: <span id="costPrincipal">$0</span></div>
-                    <div class="component">Interest Payments: <span id="costInterest">$0</span></div>
+            </div>
+
+            <div class="supporting-calculations">
+                <h2>Supporting Calculations</h2>
+                <div class="ending-home-value">
+                    <h3>Ending Home Value</h3>
+                    <div id="endingHomeValue" class="amount">$0</div>
+                    <div class="cost-breakdown">After selected appreciation period</div>
                 </div>
-            </div>
 
-            <div class="value-basis">
-                <h2>Value Basis of Interest Payments</h2>
-                <div id="valueBasis" class="amount">$0</div>
-                <div class="cost-breakdown">Sum of monthly payments compounded at 1.25% monthly</div>
-            </div>
-
-            <div class="chart-container">
-                <canvas id="loanChart"></canvas>
-            </div>
-
-            <div class="prepayment-section">
-                <h2>Principal Prepayment Calculator</h2>
-                <div class="input-group">
-                    <label for="prepayment">Prepayment Amount ($)</label>
-                    <input type="number" id="prepayment" min="0" step="1000" value="0">
-                </div>
-                <button id="calculatePrepaymentBtn" class="calculate-button secondary">Calculate with Prepayment</button>
-                
-                <div class="prepayment-results">
-                    <div class="result-item">
-                        <h3>New Monthly Payment</h3>
-                        <div id="newMonthlyPayment" class="amount">$0</div>
+                <div class="appreciation-share">
+                    <h3>Appreciation Share</h3>
+                    <div id="costAppreciation" class="amount">$0</div>
+                    <div class="cost-breakdown">
+                        <div>Based on investment percentage of ending value</div>
+                        <div class="percentage">Investment Percentage: <span id="appreciationSharePercentage">0%</span></div>
                     </div>
-                    <div class="result-item">
-                        <h3>Total Monthly Payment Savings</h3>
-                        <div id="monthlySavings" class="amount positive">$0</div>
+                </div>
+
+                <div class="total-cost">
+                    <h3>Total Cost</h3>
+                    <div class="cost-comparison">
+                        <div class="cost-amount">
+                            <div class="label">Total Cost:</div>
+                            <div id="totalCost" class="amount">$0</div>
+                        </div>
+                        <div class="cost-amount">
+                            <div class="label">Cap:</div>
+                            <div id="capAmount" class="amount">$0</div>
+                        </div>
+                    </div>
+                    <div class="cost-components">
+                        <div class="component">Principal: <span id="costPrincipal">$0</span></div>
+                        <div class="component">Interest Payments: <span id="costInterest">$0</span></div>
+                    </div>
+                </div>
+
+                <div class="value-basis">
+                    <h3>Value Basis of Interest Payments</h3>
+                    <div id="valueBasis" class="amount">$0</div>
+                    <div class="cost-breakdown">Sum of monthly payments compounded at 1.25% monthly</div>
+                </div>
+
+                <div class="total-payout">
+                    <h3>Total Payout</h3>
+                    <div id="totalPayout" class="amount">$0</div>
+                    <div class="cost-components">
+                        <div class="component">Principal: <span id="payoutPrincipal">$0</span></div>
+                        <div class="component">Cumulative Interest: <span id="payoutInterest">$0</span></div>
+                        <div class="component appreciation-component">
+                            Appreciation Share: <span id="payoutAppreciation">$0</span>
+                            <div class="cap-adjustment" id="capAdjustmentDetails" style="display: none">
+                                <div class="original">Original: <span id="originalAppreciation">$0</span></div>
+                                <div class="discount">Cap Discount: <span id="appreciationDiscount" class="negative">-$0</span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
